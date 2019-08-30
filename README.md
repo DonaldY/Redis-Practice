@@ -70,7 +70,7 @@ spring.redis.lettuce.pool.min-idle=0
 
 1. 启动 `sudo docker run -d --name redis -p 6379:6379 redis --requirepass "redis"`
 
-2. `sudo docker exec -it 6ad8199f75af redis-cli`
+2. 进入容器 `sudo docker exec -it 6ad8199f75af redis-cli`
 
 ### `Redis` 指令
 
@@ -78,5 +78,6 @@ spring.redis.lettuce.pool.min-idle=0
 
 ### `MySQL` 指令
 
-1. 启动
-``
+1. 启动 `sudo docker run -d mysql`
+
+2. 进入容器 `sudo docker exec -it mysql bash`
