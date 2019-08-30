@@ -2,4 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.donaldy.redispractice.dao.UserDao">
 
+    <select id="selectUserInfoById" resultType="com.donaldy.redispractice.model.User">
+        SELECT id as id, username as username, age as age
+        FROM `user`
+        WHERE id = #{userId}
+    </select>
+
 </mapper>

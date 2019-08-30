@@ -19,7 +19,7 @@ CREATE TABLE `user` (
   `status` TINYINT NOT NULL DEFAULT 0 COMMENT '用户状态',
   `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
   `updated_at` DATETIME NOT NULL DEFAULT current_timestamp ON UPDATE current_timestamp COMMENT '更新时间',
-  PRIMARY KEY (file_id)
+  PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COMMENT '用户表';
 ```
 
