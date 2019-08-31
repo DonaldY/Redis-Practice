@@ -1,8 +1,9 @@
 package com.donaldy.redispractice.thread;
 
 
-import java.util.ArrayList;
-import java.util.List;
+import com.donaldy.redispractice.request.CacheRequest;
+import com.donaldy.redispractice.request.CacheRequestQueue;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

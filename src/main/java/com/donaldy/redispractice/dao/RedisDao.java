@@ -19,4 +19,15 @@ public class RedisDao {
 
         stringRedisTemplate.opsForValue().set(k, v);
     }
+
+
+    public String get(String key) {
+
+        return stringRedisTemplate.opsForValue().get(key);
+    }
+
+    public void delete(String key) {
+
+        stringRedisTemplate.delete(key);
+    }
 }

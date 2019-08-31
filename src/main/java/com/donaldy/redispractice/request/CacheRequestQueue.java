@@ -1,4 +1,4 @@
-package com.donaldy.redispractice.thread;
+package com.donaldy.redispractice.request;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,5 +1,7 @@
 package com.donaldy.redispractice.thread;
 
+import com.donaldy.redispractice.request.CacheRequest;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 

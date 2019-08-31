@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.donaldy.redispractice.dao.ProductInventoryDao">
+
+    <update id="updateInventoryByProductId">
+        UPDATE productInventory
+        SET inventory_cnt = #{inventoryCnt}
+        WHERE product_id = #{productId}
+    </update>
+
+    <select id="selectInventoryByProductId" resultType="com.donaldy.redispractice.model.ProductInventory">
+        SELECT product_id as productId, inventory_cnt as inventoryCnt
+        FROM product_inventory
+        WHERE product_id = #{productId}
+    </select>
+</mapper>
