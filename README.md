@@ -21,6 +21,24 @@ CREATE TABLE `user` (
   `updated_at` DATETIME NOT NULL DEFAULT current_timestamp ON UPDATE current_timestamp COMMENT '更新时间',
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COMMENT '用户表';
+
+DROP TABLE IF EXISTS `product_inventory`;
+CREATE TABLE `product_inventory` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `product_id` INT UNSIGNED NOT NULL COMMENT '商品ID',
+  `inventory_cnt` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '库存数量',
+  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '商品库存状态',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+  `updated_at` DATETIME NOT NULL DEFAULT current_timestamp ON UPDATE current_timestamp COMMENT '更新时间',
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COMMENT '商品库存表';
+```
+
+3. 插入语句
+```
+INSERT INTO `user` (username, age) VALUES ('yyf', 25);
+
+INSERT INTO `product_inventory` (product_id, inventory_cnt) VALUES (1, 100);
 ```
 
 ### 二、Redis 配置
@@ -75,6 +93,10 @@ spring.redis.lettuce.pool.min-idle=0
 ### `Redis` 指令
 
 1. 查看所有键 `keys *`
+
+2. 设置 `set product:inventory:1 100`
+
+3. 获取 `get product:inventory:1`
 
 ### `MySQL` 指令
 
