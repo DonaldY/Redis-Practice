@@ -41,4 +41,28 @@ public class ProductInventoryServiceImpl implements ProductInventoryService {
 
         this.redisDao.setString(key, String.valueOf(productInventory.getInventoryCnt()));
     }
+
+    @Override
+    public ProductInventory getProductInventoryWithCache(Integer productId) {
+
+        String key = "product:productInventory:" + productId;
+
+        String result = this.redisDao.get(key);
+
+        if (result != null && !"".equals(result)) {
+
+            try {
+
+                Long inventoryCnt = Long.valueOf(result);
+
+                return new ProductInventory(productId, inventoryCnt);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
 }

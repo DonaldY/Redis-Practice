@@ -51,4 +51,25 @@ public class CacheRequestQueue {
 
         this.queues.add(queue);
     }
+
+    /**
+     * 获取内存队列数
+     *
+     * @return 请求队列数
+     */
+    public int getSize() {
+
+        return this.queues.size();
+    }
+
+    /**
+     * 获取对应请求队列数
+     *
+     * @param index 请求队列
+     * @return      请求队列
+     */
+    public ArrayBlockingQueue<CacheRequest> getQueue(int index) {
+
+        return this.queues.get(index);
+    }
 }

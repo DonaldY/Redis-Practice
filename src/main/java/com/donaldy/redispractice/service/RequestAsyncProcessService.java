@@ -7,5 +7,10 @@ import com.donaldy.redispractice.request.CacheRequest;
  */
 public interface RequestAsyncProcessService {
 
+    /**
+     * 处理请求
+     *
+     * @param request 请求
+     */
     void process(CacheRequest request);
 }

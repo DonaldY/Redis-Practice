@@ -24,7 +24,7 @@ public class RequestProcessorThreadPool {
 
             ArrayBlockingQueue<CacheRequest> queue = new ArrayBlockingQueue<>(100);
             requestQueue.addQueue(queue);
-            threadPool.submit(new WorkerThread(queue));
+            threadPool.submit(new RequestProcessorThread(queue));
         }
     }
 

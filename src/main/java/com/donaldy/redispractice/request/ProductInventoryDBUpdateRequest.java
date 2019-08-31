@@ -38,4 +38,10 @@ public class ProductInventoryDBUpdateRequest implements CacheRequest {
         // 修改数据库中的库存
         this.productInventoryService.updateProductInventory(productInventory);
     }
+
+    @Override
+    public Integer getProductId() {
+
+        return this.productInventory.getProductId();
+    }
 }

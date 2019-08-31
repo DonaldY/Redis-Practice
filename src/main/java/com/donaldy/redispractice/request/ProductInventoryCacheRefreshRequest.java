@@ -36,4 +36,10 @@ public class ProductInventoryCacheRefreshRequest implements CacheRequest{
 
         this.productInventoryService.setProductInventoryCache(productInventory);
     }
+
+    @Override
+    public Integer getProductId() {
+
+        return this.productId;
+    }
 }
