@@ -11,6 +11,11 @@ import org.springframework.context.annotation.Bean;
 @MapperScan(value = "com.donaldy.redispractice.dao")
 public class Application {
 
+    /**
+     * 注册监听器
+     * @return 监听器
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Bean
     public ServletListenerRegistrationBean servletListenerRegistrationBean() {
         ServletListenerRegistrationBean servletListenerRegistrationBean =
