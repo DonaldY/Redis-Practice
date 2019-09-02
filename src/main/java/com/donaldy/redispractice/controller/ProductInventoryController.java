@@ -45,7 +45,7 @@ public class ProductInventoryController {
      * @return          返回体
      */
     @GetMapping("/")
-    public ServerResponse updateProductInventory(Integer productId) {
+    public ServerResponse getProductInventory(Integer productId) {
 
         CacheRequest request = new ProductInventoryCacheRefreshRequest(productId, this.productInventoryService);
 
