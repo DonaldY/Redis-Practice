@@ -90,6 +90,8 @@ spring.redis.lettuce.pool.min-idle=0
 
 2. 进入容器 `sudo docker exec -it 6ad8199f75af redis-cli`
 
+3. 停止的容器再启动 `sudo docker start redis`
+
 ### `Redis` 指令
 
 1. 查看所有键 `keys *`
