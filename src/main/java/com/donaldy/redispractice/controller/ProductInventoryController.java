@@ -51,19 +51,14 @@ public class ProductInventoryController {
 
         this.requestAsyncProcessService.process(request);
 
-        // 将请求扔给 service 异步去处理，就需要 while(true)一会儿
-        // 去尝试等待前面有商品库存更新的操作，同时缓存刷新的操作，将最新的数据刷新到缓存中
-
         long startTime = System.currentTimeMillis();
         long endTime = 0L;
         long waitTime = 0L;
 
         while (waitTime <= 200) {
 
-            // 尝试去 redis 中读取一次商品库存的缓存数据
             ProductInventory productInventory = this.productInventoryService.getProductInventoryWithCache(productId);
 
-            // 如果读取到了结果，那么就返回
             if (productInventory != null) {
 
                 return ServerResponse.createBySuccess(productInventory);
