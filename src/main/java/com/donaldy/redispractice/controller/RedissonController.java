@@ -32,15 +32,16 @@ public class RedissonController {
         RLock lock = redissonClient.getLock("product_sku");
         boolean locked = false;
         try {
-            locked = lock.tryLock(1, 10, TimeUnit.SECONDS);
+            lock.lock( 10, TimeUnit.SECONDS);
+            // locked = lock.tryLock(1, 10, TimeUnit.SECONDS);
 
-            if (locked) {
+            /*if (locked) {
 
                 System.out.println("获取锁成功。。。");
             } else {
 
                 System.out.println("获取锁失败。。。");
-            }
+            }*/
 
             // TODO: handle NULL
             int sku = Integer.parseInt(redisDao.get("product_sku_yy"));
@@ -54,13 +55,10 @@ public class RedissonController {
 
             System.out.println("减库存成功： " + sku);
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-
         } finally {
-            if (!locked) {
+            /*if (!locked) {
                 System.out.println("获取锁失败。。。");
-            }
+            }*/
             lock.unlock();
         }
     }

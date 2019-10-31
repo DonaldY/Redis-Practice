@@ -22,10 +22,11 @@ public class RequestProcessorThread implements Callable<Boolean> {
 
         try {
 
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
 
                 CacheRequest cacheRequest = queue.take();
             }
+
         } catch (Exception e) {
 
             e.printStackTrace();
