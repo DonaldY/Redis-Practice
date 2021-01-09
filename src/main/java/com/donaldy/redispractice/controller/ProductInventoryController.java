@@ -52,7 +52,6 @@ public class ProductInventoryController {
         this.requestAsyncProcessService.process(request);
 
         long startTime = System.currentTimeMillis();
-        long endTime = 0L;
         long waitTime = 0L;
 
         while (waitTime <= 200) {
@@ -73,8 +72,7 @@ public class ProductInventoryController {
                 e.printStackTrace();
             }
 
-            endTime = System.currentTimeMillis();
-            waitTime = endTime - startTime;
+            waitTime = System.currentTimeMillis() - startTime;
         }
 
         return ServerResponse.createBySuccess(new ProductInventory(productId, -1L));
