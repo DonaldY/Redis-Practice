@@ -25,7 +25,7 @@
         <mybatis.spring.boot>1.2.0</mybatis.spring.boot>
         <lombok.version>1.16.20</lombok.version>
         <mybatis.version>3.4.5</mybatis.version>
-        <mysql.connector.version>8.0.11</mysql.connector.version>
+        <mysql.connector.version>8.0.16</mysql.connector.version>
     </properties>
 
     <dependencies>
