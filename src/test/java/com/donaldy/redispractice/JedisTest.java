@@ -154,11 +154,23 @@ public class JedisTest {
      * @param shortUrl 短链接
      */
     public void incrShortUrlAccessCount(String shortUrl) {
+        jedis.hincrBy("short_url_access_count", shortUrl, 1);
+    }
 
+    public long getShortUrlAccessCount(String shortUrl) {
+        return Long.valueOf(jedis.hget("short_url_access_count", shortUrl));
     }
 
     @Test
     public void shotUrl() {
+        String shortUrl = getShortUrl("http://redis.com/index.html");
+        System.out.println("页面上展示的短链接地址为：" + shortUrl);
 
+        for (int i = 1; i < 155; ++i) {
+            incrShortUrlAccessCount(shortUrl);
+        }
+
+        long accessCng = getShortUrlAccessCount(shortUrl);
+        System.out.println("短连接被访问的次数为：" + accessCng);
     }
 }
