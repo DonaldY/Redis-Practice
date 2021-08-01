@@ -125,4 +125,40 @@ public class JedisTest {
         likeCounter = Long.valueOf(jedis.get("article:1:like"));
         System.out.println("再次查看博客的点赞次数为：" + likeCounter);
     }
+
+    private static final String X36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String[] X36_ARRAY = "0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z".split(",");
+
+    /**
+     * 获取短链接地址
+     * @param url 原地址
+     * @return 短链接
+     */
+    public String getShortUrl(String url) {
+        long shortUrlSeed = jedis.incr("short_url_seed");
+        StringBuffer buffer = new StringBuffer();
+        while (shortUrlSeed > 0) {
+            buffer.append(X36_ARRAY[(int)(shortUrlSeed % 36)]);
+            shortUrlSeed = shortUrlSeed / 36;
+        }
+
+        String shortUrl = buffer.reverse().toString();
+        jedis.hset("short_url_access_count", shortUrl, "0");
+        jedis.hset("short_url_mapping", shortUrl, url);
+
+        return shortUrl;
+    }
+
+    /**
+     * 短链接访问次数增长
+     * @param shortUrl 短链接
+     */
+    public void incrShortUrlAccessCount(String shortUrl) {
+
+    }
+
+    @Test
+    public void shotUrl() {
+
+    }
 }
