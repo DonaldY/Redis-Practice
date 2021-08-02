@@ -134,7 +134,7 @@ public class JedisTest {
      * @param url 原地址
      * @return 短链接
      */
-    public String getShortUrl(String url) {
+    private String getShortUrl(String url) {
         long shortUrlSeed = jedis.incr("short_url_seed");
         StringBuffer buffer = new StringBuffer();
         while (shortUrlSeed > 0) {
@@ -153,11 +153,11 @@ public class JedisTest {
      * 短链接访问次数增长
      * @param shortUrl 短链接
      */
-    public void incrShortUrlAccessCount(String shortUrl) {
+    private void incrShortUrlAccessCount(String shortUrl) {
         jedis.hincrBy("short_url_access_count", shortUrl, 1);
     }
 
-    public long getShortUrlAccessCount(String shortUrl) {
+    private long getShortUrlAccessCount(String shortUrl) {
         return Long.valueOf(jedis.hget("short_url_access_count", shortUrl));
     }
 
