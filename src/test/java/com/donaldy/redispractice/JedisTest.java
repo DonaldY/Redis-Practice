@@ -146,11 +146,31 @@ public class JedisTest {
     }
 
     /**
+     * 发表一篇博客
+     * @param id 文章Id
+     * @param blog 文章信息
+     * @param tags 标签
+     * @return 是否发布
+     */
+    public boolean publishBlog(long id, Map<String, String> blog, String[] tags) {
+        if(jedis.hexists("article::" + id, "title")) {
+            return false;
+        }
+        blog.put("content_length", String.valueOf(blog.get("content").length()));
+
+        jedis.hmset("article::" + id, blog);
+        jedis.lpush("blog_list", String.valueOf(id));
+        jedis.sadd("article::" + id + "::tags", tags);
+
+        return true;
+    }
+
+    /**
      * 查看一篇博客
      * @param id 文章Id
      * @return 文章信息
      */
-    public Map<String, String> findBlogById(long id) {
+    private Map<String, String> findBlogById(long id) {
         Map<String, String> blog = jedis.hgetAll("article::" + id);
         incrementBlogViewCount(id);
         return blog;
@@ -161,7 +181,7 @@ public class JedisTest {
      * @param id 文章Id
      * @param updatedBlog 文章
      */
-    public void updateBlog(long id, Map<String, String> updatedBlog) {
+    private void updateBlog(long id, Map<String, String> updatedBlog) {
         String updatedContent = updatedBlog.get("content");
         if(updatedContent != null && !"".equals(updatedContent)) {
             updatedBlog.put("content_length", String.valueOf(updatedContent.length()));
@@ -174,7 +194,7 @@ public class JedisTest {
      * 对博客进行点赞
      * @param id 文章Id
      */
-    public void incrementBlogLikeCount(long id) {
+    private void incrementBlogLikeCount(long id) {
         jedis.hincrBy("article::" + id, "like_count", 1);
     }
 
@@ -212,6 +232,59 @@ public class JedisTest {
         // 你自己去查看自己的博客，看看浏览次数和点赞次数
         blogResult = findBlogById(1000);
         System.out.println("自己查看博客的详细内容：" + blogResult);
+    }
+
+    /**
+     * 分页查询博客
+     * @param pageNo 当前页
+     * @param pageSize 页大小
+     * @return 博客列表
+     */
+    private List<String> findBlogByPage(int pageNo, int pageSize) {
+        int startIndex = (pageNo - 1) * pageSize;
+        int endIndex = pageNo * pageSize - 1;
+        return jedis.lrange("blog_list", startIndex, endIndex);
+    }
+
+    @Test
+    public void testBlogList() {
+
+        int id = 1001;
+
+        // 构造20篇博客数据
+        for(int i = 0; i < 20; i++) {
+
+            id += i;
+
+            Map<String, String> map = new HashMap<>();
+            map.put("id", String.valueOf(id));
+            map.put("title", "第" + (i + 1) + "篇博客");
+            map.put("content", "学习第" + (i + 1) + "篇博客，是一件很有意思的事情");
+            map.put("author", "donald");
+            map.put("time", "2020-01-01 10:00:00");
+
+            publishBlog(id, map);
+        }
+
+        // 有人分页浏览所有的博客，先浏览第一页
+        int pageNo = 1;
+        int pageSize = 10;
+
+        List<String> blogPage = findBlogByPage(pageNo, pageSize);
+        System.out.println("展示第一页的博客......");
+        for(String blogId : blogPage) {
+            Map<String, String>  map = findBlogById(Long.valueOf(blogId));
+            System.out.println(map.toString());
+        }
+
+        pageNo = 2;
+
+        blogPage = findBlogByPage(pageNo, pageSize);
+        System.out.println("展示第二页的博客......");
+        for(String blogId : blogPage) {
+            Map<String, String>  map = findBlogById(Long.valueOf(blogId));
+            System.out.println(map.toString());
+        }
     }
 
     private static final String X36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
