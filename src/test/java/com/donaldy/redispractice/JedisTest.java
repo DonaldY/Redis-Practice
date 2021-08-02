@@ -173,4 +173,33 @@ public class JedisTest {
         long accessCng = getShortUrlAccessCount(shortUrl);
         System.out.println("短连接被访问的次数为：" + accessCng);
     }
+
+    @Test
+    public void testSecKill() {
+
+        for (int i = 0; i < 10; ++i) {
+
+            enqueueSecKill("第" + (i + 1) + "个秒杀请求");
+        }
+
+        while (true) {
+            String secKillRequest = dequeueSecKill();
+
+            if (secKillRequest == null || "null".equals(secKillRequest)) {
+                return;
+            }
+            System.out.println(secKillRequest);
+        }
+    }
+
+    private void enqueueSecKill(String request) {
+
+        // 秒杀抢购请求入队
+        jedis.lpush("sec_kill_request_queue", request);
+    }
+
+    private String dequeueSecKill() {
+        // 秒杀抢购出队列
+        return jedis.rpop("sec_kill_request_queue");
+    }
 }
