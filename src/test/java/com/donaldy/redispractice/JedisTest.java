@@ -7,7 +7,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.SetParams;
 import sun.rmi.runtime.Log;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author donald
@@ -124,6 +126,92 @@ public class JedisTest {
         jedis.decr("article:1:like");
         likeCounter = Long.valueOf(jedis.get("article:1:like"));
         System.out.println("再次查看博客的点赞次数为：" + likeCounter);
+    }
+
+    /**
+     * 发表一篇博客
+     * @param id 文章Id
+     * @param blog 文章信息
+     * @return 是否发布
+     */
+    private boolean publishBlog(long id, Map<String, String> blog) {
+        if(jedis.hexists("article::" + id, "title")) {
+            return false;
+        }
+        blog.put("content_length", String.valueOf(blog.get("content").length()));
+
+        jedis.hmset("article::" + id, blog);
+
+        return true;
+    }
+
+    /**
+     * 查看一篇博客
+     * @param id 文章Id
+     * @return 文章信息
+     */
+    public Map<String, String> findBlogById(long id) {
+        Map<String, String> blog = jedis.hgetAll("article::" + id);
+        incrementBlogViewCount(id);
+        return blog;
+    }
+
+    /**
+     * 更新一篇博客
+     * @param id 文章Id
+     * @param updatedBlog 文章
+     */
+    public void updateBlog(long id, Map<String, String> updatedBlog) {
+        String updatedContent = updatedBlog.get("content");
+        if(updatedContent != null && !"".equals(updatedContent)) {
+            updatedBlog.put("content_length", String.valueOf(updatedContent.length()));
+        }
+
+        jedis.hmset("article::" + id, updatedBlog);
+    }
+
+    /**
+     * 对博客进行点赞
+     * @param id 文章Id
+     */
+    public void incrementBlogLikeCount(long id) {
+        jedis.hincrBy("article::" + id, "like_count", 1);
+    }
+
+    /**
+     * 增加博客浏览次数
+     * @param id 文章Id
+     */
+    private void incrementBlogViewCount(long id) {
+        jedis.hincrBy("article::" + id, "view_count", 1);
+    }
+
+    @Test
+    public void testBlogHash() {
+        Map<String, String> blog = new HashMap<>();
+        blog.put("id", String.valueOf(1000));
+        blog.put("title", "我喜欢学习Redis");
+        blog.put("content", "学习Redis是一件特别快乐的事情");
+        blog.put("author", "donald");
+        blog.put("time", "2020-01-01 10:00:00");
+
+        publishBlog(1000, blog);
+
+        // 更新一篇博客
+        Map<String, String> updatedBlog = new HashMap<>();
+        updatedBlog.put("title", "我特别的喜欢学习Redis");
+        updatedBlog.put("content", "我平时喜欢到官方网站上去学习Redis");
+
+        updateBlog(1000, updatedBlog);
+
+        // 有别人点击进去查看你的博客的详细内容，并且进行点赞
+        Map<String, String> blogResult = findBlogById(1000);
+        System.out.println("查看博客的详细内容：" + blogResult);
+        incrementBlogLikeCount(1000);
+
+        // 你自己去查看自己的博客，看看浏览次数和点赞次数
+        blogResult = findBlogById(1000);
+        System.out.println("自己查看博客的详细内容：" + blogResult);
     }
 
     private static final String X36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
