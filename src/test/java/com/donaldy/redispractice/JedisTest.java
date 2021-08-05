@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.params.SetParams;
 import sun.rmi.runtime.Log;
 
@@ -362,5 +363,61 @@ public class JedisTest {
     private String dequeueSecKill() {
         // 秒杀抢购出队列
         return jedis.rpop("sec_kill_request_queue");
+    }
+
+
+    // =============== OA ==================
+    /**
+     * 添加待办事项
+     * @param todoEvent 代办事项
+     */
+    public void addTodoEvent(long userId, String todoEvent) {
+        jedis.lpush("todo_event::" + userId, todoEvent);
+    }
+
+    /**
+     * 分页查询待办事项列表
+     * @param userId 用户Id
+     * @param pageNo 页号
+     * @param pageSize 页大小
+     * @return 列表
+     */
+    public List<String> findTodoEventByPage(long userId, int pageNo, int pageSize) {
+        int startIndex = (pageNo - 1) * pageSize;
+        int endIndex = pageNo * pageSize - 1;
+        return jedis.lrange("todo_event::" + userId, startIndex, endIndex);
+    }
+
+    /**
+     * 插入待办事项
+     * @param userId 用户Id
+     * @param position 位置
+     * @param targetTodoEvent 目标事项
+     * @param todoEvent 待办事项
+     */
+    public void insertTodoEvent(long userId,
+                                ListPosition position,
+                                String targetTodoEvent,
+                                String todoEvent) {
+        jedis.linsert("todo_event::" + userId, position, targetTodoEvent, todoEvent);
+    }
+
+    /**
+     * 修改一个待办事项
+     * @param userId 用户Id
+     * @param index 位置
+     * @param updatedTodoEvent 更新事项
+     */
+    public void updateTodoEvent(long userId, int index, String updatedTodoEvent) {
+        jedis.lset("todo_event::" + userId, index, updatedTodoEvent);
+    }
+
+    /**
+     * 完成一个待办事项
+     * @param userId 用户Id
+     * @param todoEvent 待办事项
+     */
+    public void finishTodoEvent(long userId, String todoEvent) {
+        jedis.lrem("todo_event::" + userId, 0, todoEvent);
     }
 }
