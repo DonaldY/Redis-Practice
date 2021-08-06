@@ -476,4 +476,35 @@ public class JedisTest {
             System.out.println(todoEvent);
         }
     }
+
+    // ===================== 发送邮箱 =====================
+
+    /**
+     * 让发送邮件任务入队列
+     * @param sendMailTask 任务
+     */
+    private void enqueueSendMailTask(String sendMailTask) {
+        jedis.lpush("send_mail_task_queue", sendMailTask);
+    }
+
+    /**
+     * 阻塞式获取发送邮件任务
+     * @return 队列
+     */
+    private List<String> takeSendMailTask() {
+        return jedis.brpop(5, "send_mail_task_queue");
+    }
+
+    @Test
+    public void testSendMail() {
+        System.out.println("尝试阻塞式的获取发送邮件任务......");
+        List<String> sendMailTasks = takeSendMailTask();
+
+        enqueueSendMailTask("第一个邮件发送任务");
+        sendMailTasks = takeSendMailTask();
+        System.out.println(sendMailTasks);
+    }
+
+    // ===================== UV =====================
+
 }
