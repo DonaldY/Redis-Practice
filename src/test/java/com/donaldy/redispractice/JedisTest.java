@@ -11,6 +11,7 @@ import sun.rmi.runtime.Log;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @author donald
@@ -371,7 +372,8 @@ public class JedisTest {
      * 添加待办事项
      * @param todoEvent 代办事项
      */
-    public void addTodoEvent(long userId, String todoEvent) {
+    private void addTodoEvent(long userId, String todoEvent) {
+        // 从左边添加
         jedis.lpush("todo_event::" + userId, todoEvent);
     }
 
@@ -382,7 +384,7 @@ public class JedisTest {
      * @param pageSize 页大小
      * @return 列表
      */
-    public List<String> findTodoEventByPage(long userId, int pageNo, int pageSize) {
+    private List<String> findTodoEventByPage(long userId, int pageNo, int pageSize) {
         int startIndex = (pageNo - 1) * pageSize;
         int endIndex = pageNo * pageSize - 1;
         return jedis.lrange("todo_event::" + userId, startIndex, endIndex);
@@ -395,10 +397,10 @@ public class JedisTest {
      * @param targetTodoEvent 目标事项
      * @param todoEvent 待办事项
      */
-    public void insertTodoEvent(long userId,
-                                ListPosition position,
-                                String targetTodoEvent,
-                                String todoEvent) {
+    private void insertTodoEvent(long userId,
+                                 ListPosition position,
+                                 String targetTodoEvent,
+                                 String todoEvent) {
         jedis.linsert("todo_event::" + userId, position, targetTodoEvent, todoEvent);
     }
 
@@ -408,7 +410,7 @@ public class JedisTest {
      * @param index 位置
      * @param updatedTodoEvent 更新事项
      */
-    public void updateTodoEvent(long userId, int index, String updatedTodoEvent) {
+    private void updateTodoEvent(long userId, int index, String updatedTodoEvent) {
         jedis.lset("todo_event::" + userId, index, updatedTodoEvent);
     }
 
@@ -417,7 +419,61 @@ public class JedisTest {
      * @param userId 用户Id
      * @param todoEvent 待办事项
      */
-    public void finishTodoEvent(long userId, String todoEvent) {
+    private void finishTodoEvent(long userId, String todoEvent) {
+        // count等于0的话，就不分往前还是往后后，直接指定的value(元素)都删
         jedis.lrem("todo_event::" + userId, 0, todoEvent);
+    }
+
+    @Test
+    public void testTodoEvent() {
+        // 0. 添加20个待办事项
+        long userId = 2;
+        for(int i = 0; i < 20; i++) {
+            addTodoEvent(userId, "第" + (i + 1) + "个待办事项");
+        }
+
+        // 1. 查询第一页待办事项
+        int pageNo = 1;
+        int pageSize = 10;
+        List<String> todoEventPage = findTodoEventByPage(userId, pageNo, pageSize);
+
+        System.out.println("第一次查询第一页待办事项......");
+        for(String todoEvent :todoEventPage) {
+            System.out.println(todoEvent);
+        }
+
+        // 2.1 插入一个待办事项
+        Random random = new Random();
+        int index = random.nextInt(todoEventPage.size());
+        String targetTodoEvent = todoEventPage.get(index);
+
+        insertTodoEvent(userId, ListPosition.BEFORE,
+                targetTodoEvent, "插入的待办事项");
+        System.out.println("在" + targetTodoEvent + "前面插入了一个待办事项");
+
+        // 2.2重新分页查询第一页待办事项
+        todoEventPage = findTodoEventByPage(
+                userId, pageNo, pageSize);
+
+        System.out.println("第二次查询第一页待办事项......");
+        for(String todoEvent :todoEventPage) {
+            System.out.println(todoEvent);
+        }
+
+        // 3.修改一个待办事项
+        index = random.nextInt(todoEventPage.size());
+        updateTodoEvent(userId, index, "修改后的待办事项");
+
+        // 4.完成一个待办事项
+        finishTodoEvent(userId, todoEventPage.get(0));
+
+        // 最后查询一次待办事项
+        todoEventPage = findTodoEventByPage(
+                userId, pageNo, pageSize);
+
+        System.out.println("第三次查询第一页待办事项......");
+        for(String todoEvent :todoEventPage) {
+            System.out.println(todoEvent);
+        }
     }
 }
