@@ -673,4 +673,129 @@ public class JedisTest {
         long voteItemUsersCount = getVoteItemUsersCount(voteItemId);
         System.out.println("投票项有哪些人投票：" + voteItemUsers + "，有几个人投票：" + voteItemUsersCount);
     }
+
+    // ===================== 微博 =====================
+    /**
+     * 关注别人
+     * @param userId 用户Id
+     * @param followUserId 跟随用户Id
+     */
+    private void follow(long userId, long followUserId) {
+        jedis.sadd("user::" + followUserId + "::followers", String.valueOf(userId));
+        jedis.sadd("user::" + userId + "::follow_users", String.valueOf(followUserId));
+    }
+
+    /**
+     * 取消关注别人
+     * @param userId 用户Id
+     * @param followUserId 跟随用户Id
+     */
+    public void unfollow(long userId, long followUserId) {
+        jedis.srem("user::" + followUserId + "::followers", String.valueOf(userId));
+        jedis.srem("user::" + userId + "::follow_users", String.valueOf(followUserId));
+    }
+
+    /**
+     * 查看有哪些人关注了自己
+     * @param userId 用户Id
+     * @return 用户列表
+     */
+    private Set<String> getFollowers(long userId) {
+        return jedis.smembers("user::" + userId + "::followers");
+    }
+
+    /**
+     * 查看关注了自己的人数
+     * @param userId 用户Id
+     * @return 人数
+     */
+    private long getFollowersCount(long userId) {
+        return jedis.scard("user::" + userId + "::followers");
+    }
+
+    /**
+     * 查看自己关注了哪些人
+     * @param userId 用户Id
+     * @return 人
+     */
+    private Set<String> getFollowUsers(long userId) {
+        return jedis.smembers("user::" + userId + "::follow_users");
+    }
+
+    /**
+     * 查看自己关注的人数
+     * @param userId 用户Id
+     * @return 人数
+     */
+    private long getFollowUsersCount(long userId) {
+        return jedis.scard("user::" + userId + "::follow_users");
+    }
+
+    /**
+     * 获取用户跟其他用户之间共同关注的人有哪些
+     * @param userId 用户Id
+     * @param otherUserId 其他用户Id
+     * @return 人
+     */
+    private Set<String> getSameFollowUsers(long userId, long otherUserId) {
+        return jedis.sinter("user::" + userId + "::follow_users",
+                "user::" + otherUserId + "::follow_users");
+    }
+
+    /**
+     * 获取给我推荐的可关注人
+     * 我关注的某个好友关注的一些人，我没关注那些人，此时推荐那些人给我
+     * @param userId 用户Id
+     * @return 人
+     */
+    private Set<String> getRecommendFollowUsers(long userId, long otherUserId) {
+        return jedis.sdiff("user::" + otherUserId + "::follow_users",
+                "user::" + userId + "::follow_users");
+    }
+
+    @Test
+    public void testWeiBo()  {
+
+        // 定义用户id
+        long userId = 31;
+        long friendId = 32;
+        long superstarId = 33;
+        long classmateId = 34;
+        long motherId = 35;
+
+        // 定义关注的关系链
+        follow(userId, friendId);
+        follow(userId, motherId);
+        follow(userId, superstarId);
+        follow(friendId, superstarId);
+        follow(friendId, classmateId);
+
+        // 明星看看自己被哪些人关注了
+        Set<String> superstarFollowers = getFollowers(superstarId);
+        long superstarFollowersCount = getFollowersCount(superstarId);
+        System.out.println("明星被哪些人关注了：" + superstarFollowers + "，关注自己的人数为：" + superstarFollowersCount);
+
+        // 朋友看看自己被哪些人关注了，自己关注了哪些人
+        Set<String> friendFollowers = getFollowers(friendId);
+        long friendFollowersCount = getFollowersCount(friendId);
+
+        Set<String> friendFollowUsers = getFollowUsers(friendId);
+        long friendFollowUsersCount = getFollowUsersCount(friendId);
+
+        System.out.println("朋友被哪些人关注了：" + friendFollowers + "，被多少人关注了：" + friendFollowersCount
+                + "，朋友关注了哪些人：" + friendFollowUsers + "，关注了多少人：" + friendFollowUsersCount);
+
+        // 查看我自己关注了哪些
+        Set<String> myFollowUsers = getFollowUsers(userId);
+        long myFollowUsersCount = getFollowUsersCount(userId);
+        System.out.println("我关注了哪些人：" + myFollowUsers + ", 我关注的人数：" + myFollowUsersCount);
+
+        // 获取我和朋友共同关注的好友
+        Set<String> sameFollowUsers = getSameFollowUsers(userId, friendId);
+        System.out.println("我和朋友共同关注的人有哪些：" + sameFollowUsers);
+
+        // 获取推荐给我的可以关注的人，就是我关注的人关注的其他人
+        Set<String> recommendFollowUsers = getRecommendFollowUsers(userId, friendId);
+        System.out.println("推荐给我的关注的人有哪些：" + recommendFollowUsers);
+    }
 }
