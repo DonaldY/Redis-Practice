@@ -8,10 +8,8 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.params.SetParams;
 import sun.rmi.runtime.Log;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author donald
@@ -506,5 +504,117 @@ public class JedisTest {
     }
 
     // ===================== UV =====================
+    /**
+     * 添加一次用户访问记录
+     */
+    private void addUserAccess(long userId) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+        jedis.sadd("user_access::" + today, String.valueOf(userId));
+    }
+
+    /**
+     * 获取当天的网站uv的值
+     * @return UV值
+     */
+    private long getUV() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+        return jedis.scard("user_access::" + today);
+    }
+
+    @Test
+    public void testUV()  {
+
+        // 100 个用户，每个用户访问10次
+        for(int i = 0; i < 100; i++) {
+            long userId = i + 1;
+
+            for(int j = 0; j < 10; j++) {
+                addUserAccess(userId);
+            }
+        }
+
+        long uv = getUV();
+        // 输出应为 100
+        System.out.println("当日uv为：" + uv);
+    }
+
+    // ===================== 朋友圈 =====================
+    /**
+     * 对朋友圈进行点赞
+     * @param userId 用户Id
+     * @param momentId 动态Id
+     */
+    private void likeMoment(long userId, long momentId) {
+        jedis.sadd("moment_like_users::" + momentId, String.valueOf(userId));
+    }
+
+    /**
+     * 对朋友圈取消点赞
+     * @param userId 用户Id
+     * @param momentId 动态Id
+     */
+    private void dislikeMoment(long userId, long momentId) {
+        jedis.srem("moment_like_users::" + momentId, String.valueOf(userId));
+    }
+
+    /**
+     * 查看自己是否对某条朋友圈点赞过
+     * @param userId 用户Id
+     * @param momentId 动态Id
+     * @return 是否
+     */
+    private boolean hasLikedMoment(long userId, long momentId) {
+        return jedis.sismember("moment_like_users::" + momentId, String.valueOf(userId));
+    }
+
+    /**
+     * 获取你的一条朋友圈有哪些人点赞了
+     * @param momentId 动态Id
+     * @return 哪些人
+     */
+    private Set<String> getMomentLikeUsers(long momentId) {
+        return jedis.smembers("moment_like_users::" + momentId);
+    }
+
+    /**
+     * 获取你的一条朋友圈被几个人点赞了
+     * @param momentId  动态Id
+     * @return 点赞数
+     */
+    private long getMomentLikeUsersCount(long momentId) {
+        return jedis.scard("moment_like_users::" + momentId);
+    }
+
+    @Test
+    public void testMoment() {
+        // 你的用户id
+        long userId = 11;
+        // 你的朋友圈id
+        long momentId = 151;
+        // 你的朋友1的用户id
+        long friendId = 12;
+        // 你的朋友2的用户id
+        long otherFriendId = 13;
+
+        // 你的朋友1对你的朋友圈进行点赞，再取消点赞
+        likeMoment(friendId, momentId);
+        dislikeMoment(friendId, momentId);
+        boolean hasLikedMoment = hasLikedMoment(friendId, momentId);
+        System.out.println("朋友1刷朋友圈，看到是否对你的朋友圈点赞过：" + (hasLikedMoment ? "是" : "否"));
+
+        // 你的朋友2对你的朋友圈进行点赞
+        likeMoment(otherFriendId, momentId);
+        hasLikedMoment = hasLikedMoment(otherFriendId, momentId);
+        System.out.println("朋友2刷朋友圈，看到是否对你的朋友圈点赞过：" + (hasLikedMoment ? "是" : "否"));
+
+        // 你自己刷朋友圈，看自己的朋友圈的点赞情况
+        Set<String> momentLikeUsers = getMomentLikeUsers(momentId);
+        long momentLikeUsersCount = getMomentLikeUsersCount(momentId);
+        System.out.println("你自己刷朋友圈，看到自己发的朋友圈被" + momentLikeUsersCount + "个人点赞了，点赞的用户为：" + momentLikeUsers);
+    }
 
 }
