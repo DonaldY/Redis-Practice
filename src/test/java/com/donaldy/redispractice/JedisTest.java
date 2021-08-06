@@ -798,4 +798,36 @@ public class JedisTest {
         Set<String> recommendFollowUsers = getRecommendFollowUsers(userId, friendId);
         System.out.println("推荐给我的关注的人有哪些：" + recommendFollowUsers);
     }
+
+    // ===================== 抽奖 =====================
+    /**
+     * 添加抽奖候选人
+     * @param userId 用户Id
+     */
+    private void addLotteryDrawCandidate(long userId, long lotteryDrawEventId) {
+        jedis.sadd("lottery_draw_event::" + lotteryDrawEventId +"::candidates",
+                String.valueOf(userId));
+    }
+
+    /**
+     * 实际进行抽奖
+     * @param lotteryDrawEventId 抽奖事件
+     * @return 人数
+     */
+    private List<String> doLotteryDraw(long lotteryDrawEventId, int count) {
+        return jedis.srandmember("lottery_draw_event::" + lotteryDrawEventId +"::candidates", count);
+    }
+
+    @Test
+    public void testLottery() {
+
+        int lotteryDrawEventId = 120;
+
+        for(int i = 0; i < 20; i++) {
+            addLotteryDrawCandidate(i + 1, lotteryDrawEventId);
+        }
+
+        List<String> lotteryDrawUsers = doLotteryDraw(lotteryDrawEventId, 3);
+        System.out.println("获奖人选为：" + lotteryDrawUsers);
+    }
 }
