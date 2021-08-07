@@ -830,4 +830,46 @@ public class JedisTest {
         List<String> lotteryDrawUsers = doLotteryDraw(lotteryDrawEventId, 3);
         System.out.println("获奖人选为：" + lotteryDrawUsers);
     }
+
+    // ===================== 关键词搜索 =====================
+    /**
+     * 添加商品的时候附带一些关键词
+     * @param productId 商品Id
+     * @param keywords 关键词
+     */
+    private void addProduct(long productId, String[] keywords) {
+        for(String keyword : keywords) {
+            jedis.sadd("keyword::" + keyword + "::products", String.valueOf(productId));
+        }
+    }
+
+    /**
+     * 根据多个关键词搜索商品
+     * @param keywords 关键词
+     * @return 商品
+     */
+    private Set<String> searchProduct(String[] keywords) {
+        List<String> keywordSetKeys = new ArrayList<String>();
+        for(String keyword : keywords) {
+            keywordSetKeys.add("keyword::" + keyword + "::products");
+        }
+
+        String[] keywordArray = keywordSetKeys.toArray(new String[keywordSetKeys.size()]);
+
+        return jedis.sinter(keywordArray);
+    }
+
+    @Test
+    public void testProductSearch()  {
+
+        // 添加一批商品
+        addProduct(11, new String[]{"手机", "iphone", "潮流"});
+        addProduct(12, new String[]{"iphone", "潮流", "炫酷"});
+        addProduct(13, new String[]{"iphone", "天蓝色"});
+
+        // 根据关键词搜索商品
+        Set<String> searchResult = searchProduct(new String[]{"iphone", "潮流"});
+        System.out.println("商品搜索结果为：" + searchResult);
+    }
+
 }
