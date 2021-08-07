@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.SetParams;
 import sun.rmi.runtime.Log;
 
@@ -870,6 +871,190 @@ public class JedisTest {
         // 根据关键词搜索商品
         Set<String> searchResult = searchProduct(new String[]{"iphone", "潮流"});
         System.out.println("商品搜索结果为：" + searchResult);
+    }
+
+    // ===================== 音乐排行榜 =====================
+    /**
+     * 把新的音乐加入到排行榜里去
+     * @param songId 音乐
+     */
+    private void addSong(long songId) {
+        jedis.zadd("music_ranking_list", 0, String.valueOf(songId));
+    }
+
+    /**
+     * 增加歌曲的分数
+     * @param songId 音乐
+     * @param score 分数
+     */
+    private void incrementSongScore(long songId, double score) {
+        jedis.zincrby("music_ranking_list", score, String.valueOf(songId));
+    }
+
+    /**
+     * 获取歌曲在排行榜里的排名
+     * @param songId 音乐
+     * @return 排名
+     */
+    private long getSongRank(long songId) {
+        return jedis.zrevrank("music_ranking_list", String.valueOf(songId));
+    }
+
+    /**
+     * 获取音乐排行榜
+     * @return 排行榜
+     */
+    private Set<Tuple> getMusicRankingList() {
+        return jedis.zrevrangeWithScores("music_ranking_list", 0, 2);
+    }
+
+    @Test
+    public void testMusicRank()  {
+
+        for(int i = 0; i < 20; i++) {
+            addSong(i + 1);
+        }
+
+        incrementSongScore(5, 3.2);
+        incrementSongScore(15, 5.6);
+        incrementSongScore(7, 9.6);
+
+        long songRank = getSongRank(5);
+        System.out.println("查看id为5的歌曲的排名：" + (songRank + 1));
+
+        Set<Tuple> musicRankingList = getMusicRankingList();
+        System.out.println("查看音乐排行榜排名前3个的歌曲：" + musicRankingList);
+    }
+
+    // ===================== 音乐排行榜 =====================
+    /**
+     * 加入一篇新闻
+     * @param newsId 新闻Id
+     */
+    private void addNews(long newsId, long timestamp) {
+        jedis.zadd("news", timestamp, String.valueOf(newsId));
+    }
+
+    /**
+     * 搜索新闻
+     * @param maxTimestamp 最大时间
+     * @param minTimestamp 最小时间
+     * @param index 索引
+     * @param count 总数
+     * @return 新闻
+     */
+    private Set<Tuple> searchNews(long maxTimestamp, long minTimestamp, int index, int count) {
+        return jedis.zrevrangeByScoreWithScores("news", maxTimestamp, minTimestamp, index, count);
+    }
+
+    @Test
+    public void testNews() {
+
+        for(int i = 0; i < 20; i++) {
+            addNews(i + 1, i + 1);
+        }
+
+        long maxTimestamp = 18;
+        long minTimestamp = 2;
+
+        int pageNo = 1;
+        int pageSize = 10;
+        int startIndex = (pageNo - 1) * 10;
+
+        Set<Tuple> searchResult = searchNews(
+                maxTimestamp, minTimestamp, startIndex, pageSize);
+
+        System.out.println("搜索指定时间范围内的新闻的第一页：" + searchResult);
+    }
+
+
+    // ===================== 商品推荐 =====================
+    /**
+     * 继续购买商品
+     * @param productId 商品Id
+     * @param otherProductId 其他商品Id
+     */
+    private void continuePurchase(long productId, long otherProductId) {
+        jedis.zincrby("continue_purchase_products::" + productId, 1, String.valueOf(otherProductId));
+    }
+
+    /**
+     * 推荐其他人购买过的其他商品
+     * @param productId 商品Id
+     * @return 商品
+     */
+    private Set<Tuple> getRecommendProducts(long productId) {
+        return jedis.zrevrangeWithScores("continue_purchase_products::" + productId, 0, 2);
+    }
+
+    @Test
+    public void testProductRecommend() {
+
+        int productId = 1;
+
+        for(int i = 0; i < 20; i++) {
+            continuePurchase(productId, i + 2);
+        }
+        for(int i = 0; i < 3; i++) {
+            continuePurchase(productId, i + 2);
+        }
+
+        Set<Tuple> recommendProducts = getRecommendProducts(productId);
+        System.out.println("推荐其他人购买过的商品：" + recommendProducts);
+    }
+
+    // ===================== 自动补全 =====================
+    /**
+     * 搜索某个关键词
+     * @param keyword 关键词
+     */
+    private void search(String keyword) {
+        char[] keywordCharArray = keyword.toCharArray();
+
+        StringBuffer potentialKeyword = new StringBuffer("");
+
+        // 我喜欢学习
+
+        // 我：时间+我喜欢学习
+        // 我喜：时间+我喜欢学习
+
+        // 我爱大家
+        // 我：时间+我爱大家
+
+        for(char keywordChar : keywordCharArray) {
+            potentialKeyword.append(keywordChar);
+
+            jedis.zincrby(
+                    "potential_Keyword::" + potentialKeyword.toString() + "::keywords",
+                    new Date().getTime(),
+                    keyword);
+        }
+    }
+
+    /**
+     * 获取自动补全列表
+     * @param potentialKeyword 潜在补全列表
+     * @return 列表
+     */
+    private Set<String> getAutoCompleteList(String potentialKeyword) {
+        return jedis.zrevrange("potential_Keyword::" + potentialKeyword + "::keywords",
+                0, 2);
+    }
+
+    @Test
+    public void testAutoComplete() {
+
+        search("我爱大家");
+        search("我喜欢学习Redis");
+        search("我很喜欢一个城市");
+        search("我不太喜欢玩儿");
+        search("我喜欢学习Spark");
+
+        Set<String> autoCompleteList = getAutoCompleteList("我");
+        System.out.println("第一次自动补全推荐：" + autoCompleteList);
+
+        autoCompleteList = getAutoCompleteList("我喜");
+        System.out.println("第二次自动补全推荐：" + autoCompleteList);
     }
 
 }
