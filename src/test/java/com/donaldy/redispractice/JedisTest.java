@@ -1113,5 +1113,145 @@ public class JedisTest {
         System.out.println("附近5公里内的商家: " + nearbyShops);
     }
 
-    // ===================== 陌生人社交 =====================
+    // ===================== UV HyperLogLog =====================
+
+    /**
+     * 初始化 UV 数据
+     */
+    private void initUVData() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+
+        for (int i = 0; i < 1358; ++i) {
+            jedis.pfadd("hyperloglog_uv_" + today, String.valueOf(i + 1));
+        }
+    }
+
+    private long getUV2() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+
+        return jedis.pfcount("hyperloglog_uv_" + today);
+    }
+
+    @Test
+    public void testUV2() {
+        initUVData();
+        long uv = getUV2();
+        System.out.println("今天 UV 的值是：" + uv);
+    }
+
+
+    // ===================== 垃圾内容 =====================
+
+    /**
+     * 判断当强内容是否是垃圾内容
+     *
+     * @param content 内容
+     * @return 是否
+     */
+    private Boolean isGarbageContent(String content) {
+        return jedis.pfadd("hyperloglog_content", content) == 0;
+    }
+
+    @Test
+    public void testGarbageContent() {
+        String content = "正常的内容";
+        System.out.println("是否为垃圾内容： " + (isGarbageContent(content) ? "是" : "否"));
+
+        content = "垃圾内容";
+        System.out.println("是否为垃圾内容： " + (isGarbageContent(content) ? "是" : "否"));
+
+        content = "垃圾内容";
+        System.out.println("是否为垃圾内容： " + (isGarbageContent(content) ? "是" : "否"));
+    }
+
+    // ===================== 周活跃用户数、月活跃用户数、年活跃用户数的统计 =====================
+
+    /**
+     * 初始化 UV 数据
+     * @param date 日期
+     */
+    private void initUVData3(String date) {
+        Random random = new Random();
+        int startIndex = random.nextInt(1000);
+        System.out.println("今日访问uv起始id为：" + startIndex);
+
+        for (int i = startIndex; i < startIndex + 1358; ++i) {
+            for (int j = 0; j < 10; ++j) {
+                jedis.pfadd("hyperloglog_uv_" + date, String.valueOf((i + 1)));
+            }
+        }
+    }
+
+    private long getUV3(String date) {
+
+        return jedis.pfcount("hyperloglog_uv_" + date);
+    }
+
+    private long getWeeklyUV() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        List<String> keys = new ArrayList<>();
+
+        for (int i = 0; i < 7; ++i) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            String date = dateFormat.format(calendar.getTime());
+            keys.add("hyperloglog_uv_" + date);
+        }
+
+        String [] keyArray = keys.toArray(new String[keys.size()]);
+
+        jedis.pfmerge("weekly_uv", keyArray);
+
+        return jedis.pfcount("weekly_uv");
+    }
+
+    @Test
+    public void testUV3() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        for (int i = 0; i < 7; ++i) {
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            String date = dateFormat.format(calendar.getTime());
+            initUVData3(date);
+            System.out.println("日期为：" + date + "的uv值为：" + getUV3(date));
+        }
+
+        long weeklyUV = getWeeklyUV();
+        System.out.println("实际的周活跃用户数为：" + weeklyUV);
+    }
+
+    // ===================== 记录用户的操作日志 =====================
+
+    /**
+     * 记录用户的操作日志
+     * @param operation 操作
+     * @param userId 用户Id
+     */
+    private void recordUserOperationLog(String operation, long userId) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+
+        jedis.setbit("operation::" + operation + "::" + today + "::log", userId, String.valueOf(1));
+    }
+
+    private Boolean hasOperated(String operation, long userId) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+        return jedis.getbit("operation::" + operation + "::" + today + "::log", userId);
+    }
+
+    @Test
+    public void testBit() {
+        recordUserOperationLog("操作1", 110);
+        System.out.println("用户110是否执行过操作：" + (hasOperated("操作1", 110) ? "是" : "否"));
+        System.out.println("用户111是否执行过操作：" + (hasOperated("操作1", 111) ? "是" : "否"));
+    }
 }
