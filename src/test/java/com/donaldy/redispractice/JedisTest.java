@@ -3,9 +3,7 @@ package com.donaldy.redispractice;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
 import redis.clients.jedis.params.SetParams;
 import sun.rmi.runtime.Log;
 
@@ -1057,4 +1055,63 @@ public class JedisTest {
         System.out.println("第二次自动补全推荐：" + autoCompleteList);
     }
 
+
+    // ===================== 地理位置 =====================
+
+    /**
+     * 添加地理位置
+     *
+     * @param name 名称
+     * @param longitude 经度
+     * @param latitude 纬度
+     */
+    private void addLocation(String name, double longitude, double latitude) {
+        jedis.geoadd("location_data", longitude, latitude, name);
+    }
+
+    /**
+     * 获得用户到商家距离
+     * @param user 用户
+     * @param shop 商家
+     * @return 距离
+     */
+    private double getDistance(String user, String shop) {
+        return jedis.geodist("location_data", user, shop, GeoUnit.KM);
+    }
+
+    @Test
+    public void testGeo() {
+        addLocation("张三", 116.49428833935545, 39.86700462665782);
+        addLocation("小吃店", 116.45961274121092, 39.87517301328063);
+        System.out.println("用户到商家的距离为：" + getDistance("张三", "小吃店"));
+    }
+
+    // ===================== 陌生人社交 =====================
+
+    /**
+     * 查找附近5公里内的店铺
+     * @return 店铺
+     */
+    private List<GeoRadiusResponse> getNearbyShops() {
+        return jedis.georadiusByMember("location_data", "张三", 5.0, GeoUnit.KM);
+    }
+
+    @Test
+    public void testGeoShops() {
+
+        List<String> nearbyShops = new ArrayList<>();
+
+        List<GeoRadiusResponse> results = getNearbyShops();
+
+        for (GeoRadiusResponse result : results) {
+            String name = result.getMemberByString();
+            if (!"张三".equals(name)) {
+                nearbyShops.add(name);
+            }
+        }
+
+        System.out.println("附近5公里内的商家: " + nearbyShops);
+    }
+
+    // ===================== 陌生人社交 =====================
 }
