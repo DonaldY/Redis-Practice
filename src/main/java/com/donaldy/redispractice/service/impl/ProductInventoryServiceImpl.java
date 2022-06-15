@@ -19,7 +19,8 @@ public class ProductInventoryServiceImpl implements ProductInventoryService {
     @Override
     public void updateProductInventory(ProductInventory productInventory) {
 
-        this.productInventoryDao.updateInventoryByProductId(productInventory.getProductId(), productInventory.getInventoryCnt());
+        this.productInventoryDao.updateInventoryByProductId(productInventory.getProductId(),
+                productInventory.getInventoryCnt());
     }
 
     @Override
