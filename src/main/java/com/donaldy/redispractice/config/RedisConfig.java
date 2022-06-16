@@ -26,7 +26,14 @@ public class RedisConfig {
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://127.0.0.1:6379").setDatabase(0);
+        config.useClusterServers()
+                .addNodeAddress("redis://172.18.1.23:7003")
+                .addNodeAddress("redis://172.18.1.23:7004")
+                .addNodeAddress("redis://172.18.1.24:7003")
+                .addNodeAddress("redis://172.18.1.24:7004")
+                .addNodeAddress("redis://172.18.1.26:7003")
+                .addNodeAddress("redis://172.18.1.26:7004")
+                .setPassword("7Ego=3eyE");
 
         return Redisson.create(config);
     }

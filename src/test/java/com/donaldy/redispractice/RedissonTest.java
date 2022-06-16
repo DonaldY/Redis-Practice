@@ -24,6 +24,13 @@ public class RedissonTest {
 
         RLock lock = redisson.getLock("myLock");
         lock.lock();
+
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         lock.unlock();
     }
 }
