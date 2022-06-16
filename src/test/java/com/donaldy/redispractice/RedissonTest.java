@@ -25,11 +25,22 @@ public class RedissonTest {
         RLock lock = redisson.getLock("myLock");
         lock.lock();
 
+        test1(lock);
+
         try {
             Thread.sleep(60000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        lock.unlock();
+    }
+
+    private void test1(RLock lock) {
+
+        lock.lock();
+
+        System.out.println("test1 加锁了");
 
         lock.unlock();
     }
