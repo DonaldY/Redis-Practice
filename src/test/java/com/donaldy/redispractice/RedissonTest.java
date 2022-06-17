@@ -44,4 +44,14 @@ public class RedissonTest {
 
         lock.unlock();
     }
+
+    @Test
+    public void test2() {
+
+        RLock lock = redisson.getFairLock("fairLock");
+
+        lock.lock();
+
+        lock.unlock();
+    }
 }
