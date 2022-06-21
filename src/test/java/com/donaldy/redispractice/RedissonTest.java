@@ -68,4 +68,17 @@ public class RedissonTest {
 
         multiLock.unlock();
     }
+
+    @Test
+    public void test4() {
+
+        RLock lock1 = redisson.getLock("lock1");
+        RLock lock2 = redisson.getLock("lock2");
+        RLock lock3 = redisson.getLock("lock3");
+
+        RLock redLock = redisson.getRedLock(lock1, lock2, lock3);
+
+        redLock.lock();
+        redLock.unlock();
+    }
 }
