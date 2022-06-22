@@ -2,11 +2,12 @@ package com.donaldy.redispractice;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
+import org.redisson.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.time.LocalDateTime;
 
 /**
  * @author donald
@@ -81,4 +82,22 @@ public class RedissonTest {
         redLock.lock();
         redLock.unlock();
     }
+
+    @Test
+    public void test5() {
+
+        RReadWriteLock readWriteLock = redisson.getReadWriteLock("readWriteLock");
+
+        RLock readLock = readWriteLock.readLock();
+
+        RLock writeLock = readWriteLock.writeLock();
+
+        readLock.lock();
+        writeLock.lock();
+
+        readLock.unlock();
+        writeLock.unlock();
+    }
+
+
 }
