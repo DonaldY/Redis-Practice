@@ -99,5 +99,15 @@ public class RedissonTest {
         writeLock.unlock();
     }
 
+    @Test
+    public void test6() throws InterruptedException {
+
+        RSemaphore semaphore = redisson.getSemaphore("semaphore");
+
+        // 3个凭证：允许3个线程同时持有
+        semaphore.trySetPermits(3);
+        semaphore.acquire();
+        semaphore.release();
+    }
 
 }
