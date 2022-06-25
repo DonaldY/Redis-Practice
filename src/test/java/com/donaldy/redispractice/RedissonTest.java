@@ -110,4 +110,35 @@ public class RedissonTest {
         semaphore.release();
     }
 
+    @Test
+    public void test7() throws InterruptedException {
+
+        RSemaphore semaphore = redisson.getSemaphore("semaphore1");
+
+        // 3个凭证：允许3个线程同时持有
+        semaphore.trySetPermits(3);
+
+        for (int i = 0; i < 10; ++i) {
+            new Thread(() -> {
+                try {
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 尝试获取 Semaphore 锁");
+                    semaphore.acquire();
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 成功获取 Semaphore 锁，开始工作");
+                    Thread.sleep(3000);
+                    semaphore.release();
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 释放 Semaphore 锁");
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        Thread.sleep(60000);
+    }
+
+
 }
