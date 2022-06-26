@@ -140,5 +140,33 @@ public class RedissonTest {
         Thread.sleep(60000);
     }
 
+    @Test
+    public void test8() throws InterruptedException {
 
+        RCountDownLatch countDownLatch = redisson.getCountDownLatch("countDownLatch");
+        countDownLatch.trySetCount(3);
+
+        System.out.println(LocalDateTime.now()
+                + " : 线程[" + Thread.currentThread().getName() + "] 设置了必须有3个线程执行 countDown，进入等待中。。。");
+        for (int i = 0; i < 3; ++i) {
+            new Thread(() -> {
+                try {
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 在做一些操作，请耐心等待。。。");
+                    Thread.sleep(3000);
+                    RCountDownLatch localLatch = redisson.getCountDownLatch("countDownLatch");
+                    localLatch.countDown();
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 执行 countDown 操作");
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+
+        countDownLatch.await();
+        System.out.println(LocalDateTime.now()
+                + " : 线程[" + Thread.currentThread().getName() + "] 收到通知，有3个线程都执行了 countDown 操作，可以继续往下走");
+    }
 }
