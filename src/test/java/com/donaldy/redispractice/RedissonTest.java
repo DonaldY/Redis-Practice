@@ -183,4 +183,15 @@ public class RedissonTest {
 
         System.out.println(new String(client.getData().forPath("/my/path")));
     }*/
+
+    /*@Test
+    public void test1() throws Exception {
+        InterProcessMutex lock = new InterProcessMutex(client, "/locks/lock_01");
+        lock.acquire();
+
+        Thread.sleep(100000);
+        lock.release();
+    }*/
+
+
 }
