@@ -169,4 +169,18 @@ public class RedissonTest {
         System.out.println(LocalDateTime.now()
                 + " : 线程[" + Thread.currentThread().getName() + "] 收到通知，有3个线程都执行了 countDown 操作，可以继续往下走");
     }
+
+    /*@Test
+    public void test() throws Exception {
+
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+        CuratorFramework client = CuratorFrameworkFactory.newClient(
+                "172.18.1.23:2181,172.18.1.24:2181,172.18.1.26:2181", retryPolicy);
+        client.start();
+
+        client.create().creatingParentsIfNeeded()
+                .forPath("/my/path", "hello world".getBytes());
+
+        System.out.println(new String(client.getData().forPath("/my/path")));
+    }*/
 }
