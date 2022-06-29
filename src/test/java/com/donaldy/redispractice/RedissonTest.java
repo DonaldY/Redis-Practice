@@ -193,5 +193,33 @@ public class RedissonTest {
         lock.release();
     }*/
 
+    /*@Test
+    public void test2() throws Exception {
+        InterProcessMutex lock = new InterProcessMutex(client, "/locks/lock_01");
+        lock.acquire();
+
+        new Thread(() -> {
+            try {
+                System.out.println(LocalDateTime.now()
+                        + " : 线程[" + Thread.currentThread().getName() + "] 在做一些操作，请耐心等待。。。");
+
+                lock.acquire();
+                Thread.sleep(30000);
+
+                System.out.println(LocalDateTime.now()
+                        + " : 线程[" + Thread.currentThread().getName() + "] 执行 release 操作");
+                lock.release();
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+        }).start();
+
+        Thread.sleep(10000);
+        lock.release();
+
+        Thread.sleep(100000);
+    }*/
+
 
 }
