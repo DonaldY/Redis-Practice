@@ -221,5 +221,32 @@ public class RedissonTest {
         Thread.sleep(100000);
     }*/
 
+    /*@Test
+    public void test3() throws Exception {
+        InterProcessSemaphoreV2 semaphore = new InterProcessSemaphoreV2(client, "/semaphores/semaphore_01", 3);
+
+        for (int i = 0; i < 10; i++) {
+            new Thread(() -> {
+                try {
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 在做一些操作，请耐心等待。。。");
+                    Lease lease = semaphore.acquire();
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName()
+                            + "] 成功获取 Semaphore 锁，开始工作");
+                    Thread.sleep(3000);
+                    System.out.println(LocalDateTime.now()
+                            + " : 线程[" + Thread.currentThread().getName() + "] 执行 release 操作");
+                    semaphore.returnLease(lease);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }).start();
+        }
+
+        Thread.sleep(30000);
+    }*/
+
 
 }
