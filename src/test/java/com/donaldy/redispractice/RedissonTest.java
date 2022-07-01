@@ -248,5 +248,14 @@ public class RedissonTest {
         Thread.sleep(30000);
     }*/
 
+    /*@Test
+    public void test4() throws Exception {
+        InterProcessReadWriteLock lock = new InterProcessReadWriteLock(client, "/locks/lock_01");
+        lock.readLock().acquire();
+        lock.readLock().release();
+        lock.writeLock().acquire();
+        lock.writeLock().release();
+    }*/
+
 
 }
