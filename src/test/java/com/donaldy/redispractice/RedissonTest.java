@@ -257,5 +257,18 @@ public class RedissonTest {
         lock.writeLock().release();
     }*/
 
+    /*@Test
+    public void test5() throws Exception {
+        InterProcessLock lock1 = new InterProcessMutex(client, "/locks/lock_01");
+        InterProcessLock lock2 = new InterProcessMutex(client, "/locks/lock_02");
+        InterProcessLock lock3 = new InterProcessMutex(client, "/locks/lock_03");
 
+        InterProcessMultiLock multiLock = new InterProcessMultiLock(Arrays.asList(lock1, lock2, lock3));
+        multiLock.acquire();
+
+        Thread.sleep(10000);
+        multiLock.release();
+
+        Thread.sleep(30000);
+    }*/
 }
